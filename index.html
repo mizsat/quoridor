@@ -1,0 +1,57 @@
+<!--
+    index.html
+    Quoridor（クオリドル）ゲームのHTMLエントリポイント。
+    盤面・UI・各種ダイアログ・ボタン等の要素を定義。
+-->
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    
+    <title>Quoridor AI</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="game.js"></script>
+    <script src="ai.js"></script>
+    <script src="view.js"></script>
+    <script src="controller.js"></script>
+</head>
+<body>
+    <!-- Quoridor盤面描画用キャンバス -->
+    <canvas id="quoridor-canvas" width="540" height="540"></canvas>
+
+    <div id="progress_bar_container">
+        <div id="progress_bar"></div>
+    </div>
+    <div id="button-container">
+        <button id="reset_button">RESET</button>
+        <button id="undo_button">UNDO</button>
+        <button id="redo_button">REDO</button>
+        <button id="mcts_button">MCTS</button>
+    </div>  
+    <div id="info_box"></div>
+
+    <script>
+        window.onload = function() {
+            // 人間対人間モード（AI開発モードをtrueに）
+            const controller = new Controller(1.4, true);
+            // 先手・後手とも人間で新規ゲーム開始
+            controller.startNewGame(true, 100000); // 100000回MCTS
+            // 盤面描画（コマも含めて）
+            controller.view.render();
+            window.controller = controller;
+            // MCTSボタンのイベント登録
+            const mctsBtn = document.getElementById('mcts_button');
+            if (mctsBtn) {
+                mctsBtn.onclick = function() {
+                    if (controller && controller.showMCTSCandidates) {
+                        controller.showMCTSCandidates();
+                    }
+                };
+            }
+        };
+    </script>
+</body>
+</html>

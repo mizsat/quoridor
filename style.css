@@ -1,0 +1,77 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+#progress_bar_container {
+    width: 526px;
+    height: 16px;
+    background: #f5f5f5;
+    border: 1px solid #bbb;
+    margin: 8px auto 8px auto; /* 下マージンを32pxに拡大 */
+    overflow: hidden;
+}
+#progress_bar {
+    width: 0;
+    height: 100%;
+    background: #888;
+    transition: width 0.2s;
+}
+#quoridor-canvas {
+    border: none;
+    background: #e0e0e0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    display: block;
+    margin: 24px auto 0 auto;
+}
+#button-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+#reset_button,
+#undo_button,
+#redo_button,
+#mcts_button {
+    margin-top: 0;
+    margin-right: 0;
+    padding: 8px 20px;
+    border: none;
+    background: #888;
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#reset_button:hover,
+#undo_button:hover,
+#redo_button:hover,
+#mcts_button:hover {
+    background: #444;
+}
+#info_box {
+    margin: 18px;
+    color: #222;
+    font-size: 16px; /* フォントサイズを大きく */
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    padding: 14px 22px;
+    width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.2; /* 行間を狭く */
+}
+#info_box table {
+    font-size: 16px; /* テーブル内も大きく */
+    line-height: 1.2; /* テーブル内もさらに狭く */
+}
+#info_box th, #info_box td {
+    padding: 2px 8px; /* パディングも少し狭く */
+    font-size: 14px;
+}
+body {
+    background: #f0f0f0;
+    font-family: 'Segoe UI', 'Meiryo', sans-serif;
+}
