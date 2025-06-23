@@ -133,7 +133,7 @@ class Controller {
     /**
      * MCTS候補手の勝率を表示する（MCTSボタン用）
      */
-    showMCTSCandidates() {
+    showMCTSCandidates(options = {}) {
         // プログレスバーを0%で表示
         if (this.view && this.view.adjustProgressBar) this.view.adjustProgressBar(0);
         // Web Workerを使ってMCTS進捗を表示
@@ -151,6 +151,7 @@ class Controller {
             } else if (data && data.type === 'candidates') {
                 // 候補手リスト
                 if (typeof window !== 'undefined') window.workerCandidates = data.candidates;
+                if (typeof window !== 'undefined' && data.totalNumOfSimulations !== undefined) window.workerTotalNumOfSimulations = data.totalNumOfSimulations;
                 if (this.view && this.view.renderInfoBox) this.view.renderInfoBox();
             } else {
                 // 結果（move配列）
@@ -168,14 +169,12 @@ class Controller {
         };
         // Workerに計算依頼
         this.worker.postMessage({
-            game: Game.clone(this.game),
+            game: this.game, // cloneせずそのまま渡す
             numOfMCTSSimulations: this.numOfMCTSSimulations,
             uctConst: this.uctConst,
-            aiDevelopMode: true
+            aiDevelopMode: true,
+            updateInterval: options.updateInterval || 1000
         });
-        // 候補手リストを初期化
-        if (typeof window !== 'undefined') window.workerCandidates = [];
-        if (this.view && this.view.renderInfoBox) this.view.renderInfoBox();
     }
 }
 

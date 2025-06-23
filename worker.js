@@ -11,15 +11,40 @@
 importScripts('game.js'); // ゲームロジック
 importScripts('ai.js');   // AIロジック
 
+let mctsCache = {}; // 不要だが念のため残す
+let globalAI = null;
+
+function reviveGamePrototypes(game) {
+    if (!game) return;
+    Object.setPrototypeOf(game, Game.prototype);
+    if (game.board) {
+        Object.setPrototypeOf(game.board, Board.prototype);
+        if (game.board.pawns) {
+            for (let i = 0; i < game.board.pawns.length; i++) {
+                Object.setPrototypeOf(game.board.pawns[i], Pawn.prototype);
+                if (game.board.pawns[i].position) {
+                    Object.setPrototypeOf(game.board.pawns[i].position, PawnPosition.prototype);
+                }
+            }
+        }
+    }
+}
+
 onmessage = function(event) {
-    // メインスレッドからゲーム状態・AI設定を受信
-    const game = Game.clone(event.data.game);
+    const game = event.data.game;
+    reviveGamePrototypes(game);
+    const updateInterval = event.data.updateInterval || 1000;
     if (game.winner === null) {
-        // AIで次の手を探索し、進捗・候補・結果を返す
-        const ai = new AI(event.data.numOfMCTSSimulations, event.data.uctConst, event.data.aiDevelopMode, true);
-        // chooseNextMove内で進捗・候補・結果をpostMessageする
-        const move = ai.chooseNextMove(game);
-        // 最終手も一応返す（後方互換）
+        // グローバルAIインスタンスを使い回す
+        if (!globalAI) {
+            globalAI = new AI(event.data.numOfMCTSSimulations, event.data.uctConst, event.data.aiDevelopMode, true);
+        } else {
+            // パラメータが変わった場合は再生成
+            if (globalAI.numOfMCTSSimulations !== event.data.numOfMCTSSimulations || globalAI.uctConst !== event.data.uctConst) {
+                globalAI = new AI(event.data.numOfMCTSSimulations, event.data.uctConst, event.data.aiDevelopMode, true);
+            }
+        }
+        const move = globalAI.chooseNextMove(game, false, updateInterval);
         postMessage(move);
     }
 };

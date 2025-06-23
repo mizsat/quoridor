@@ -576,29 +576,28 @@ class AI {
         this.forWorker = isWorker; // boolean;
     }
 
-    chooseNextMove(game, forceMCTS = false) {
+    chooseNextMove(game, forceMCTS = false, updateInterval = 1000) {
         const d0 = new Date();
-        // --- 壁設置も含めて序盤からMCTSを実行するように修正 ---
-        // if (!forceMCTS && game.turn < 2) {
-        //     const nextPosition = AI.chooseShortestPathNextPawnPosition(game);
-        //     const pawnMoveTuple = nextPosition.getDisplacementPawnMoveTupleFrom(game.pawnOfTurn.position);
-        //     if (pawnMoveTuple[1] === 0) {
-        //         if (this.forWorker) {
-        //             postMessage(1);
-        //         }
-        //         return [[nextPosition.row, nextPosition.col], null, null];
-        //     }
-        // }
-
+        // --- 毎回新規MCTS木で計算（元の仕様） ---
         const mcts = new MonteCarloTreeSearch(game, this.uctConst);
-        
+        // --- 追加シミュレーション ---
         if (this.forWorker) {
-            const nSearch = 50;
-            const nBatch = Math.ceil(this.numOfMCTSSimulations / nSearch);
+            const nSearch = Math.ceil(this.numOfMCTSSimulations / updateInterval);
+            const nBatch = updateInterval;
             postMessage(0);
             for (let i = 0; i < nSearch; i++) {
                 mcts.search(nBatch);
-                postMessage((i+1)/nSearch);
+                // 1000回ごとに候補手リストを送信
+                if (this.aiDevelopMode && typeof postMessage !== 'undefined') {
+                    const candidates = mcts.root.children.map(child => ({
+                        move: child.move,
+                        winRate: child.winRate,
+                        numSims: child.numSims,
+                        numWins: child.numWins
+                    }));
+                    postMessage({type: 'candidates', candidates, totalNumOfSimulations: mcts.totalNumOfSimulations});
+                }
+                postMessage(Math.min((i+1)*nBatch, this.numOfMCTSSimulations)/this.numOfMCTSSimulations);
             }
         } else {
             mcts.search(this.numOfMCTSSimulations);
@@ -614,7 +613,7 @@ class AI {
                 numSims: child.numSims,
                 numWins: child.numWins
             }));
-            postMessage({type: 'candidates', candidates});
+            postMessage({type: 'candidates', candidates, totalNumOfSimulations: mcts.totalNumOfSimulations});
         } else if (this.aiDevelopMode && typeof window !== 'undefined') {
             window.mctsCandidates = mcts.root.children.map(child => ({
                 move: child.move,
@@ -622,6 +621,7 @@ class AI {
                 numSims: child.numSims,
                 numWins: child.numWins
             }));
+            window.mctsTotalNumOfSimulations = mcts.totalNumOfSimulations;
         }
         const best = mcts.selectBestMove();
         let bestMove = best.move;

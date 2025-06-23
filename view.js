@@ -106,7 +106,7 @@ class View {
                 View.removePreviousFadeInoutBox();
                 View.cancelPawnClick();
                 View.cancelWallShadows();
-                this.controller.startNewGame(true, 1000); // 人間vs人間・AI用パラメータは任意
+                this.controller.startNewGame(true, 10000000); // ←ここを10000000に修正
             };
         }
 
@@ -568,38 +568,7 @@ class View {
     }
 
     adjustProgressBar(percentage) {
-        percentage = Math.round(percentage);
-        const htmlProgressBar = document.getElementById("progress_bar");
-        if (!htmlProgressBar) return;
-        if (this.progressBarIntervalId !== null) {
-            clearInterval(this.progressBarIntervalId);
-            this.progressBarIntervalId = null;
-        }
-        let width = parseInt(htmlProgressBar.style.width) || 0; // NaN対策
-        // リセット時は一気に0に（アニメーションなし）
-        if (width > percentage) {
-            htmlProgressBar.style.transition = 'none';
-            htmlProgressBar.style.width = '0%';
-            // 強制再描画でtransition解除を反映
-            void htmlProgressBar.offsetWidth;
-            htmlProgressBar.style.transition = '';
-            width = 0;
-        }
-        const frame = function() {
-            if (width >= percentage) {
-                clearInterval(this.progressBarIntervalId);
-                this.progressBarIntervalId = null;
-                // 100%到達時にリセットしない
-            } else {
-                width++;
-                htmlProgressBar.style.width = width + '%'; 
-            }
-        }
-        if (percentage >= 100) {
-            this.progressBarIntervalId = setInterval(frame.bind(this), 1);
-        } else if (width < percentage) {
-            this.progressBarIntervalId = setInterval(frame.bind(this), 10);
-        }
+        // プログレスバー機能は削除
     }
 
     enableUndoRedoButtonIfNecessary() {
@@ -764,7 +733,7 @@ class View {
         if (this.aiDevelopMode && typeof window !== 'undefined' && window.mctsCandidates && window.mctsCandidates.length > 0) {
             // Sort by number of simulations, show top 5
             const sorted = window.mctsCandidates.slice().sort((a, b) => b.numSims - a.numSims).slice(0, 5);
-            html += '<br><table style="font-size:12px; border-collapse:collapse;">';
+            html += '<br><table class="mcts-table">';
             html += '<tr><th>Move</th><th>Win Rate</th><th>Simulations</th></tr>';
             for (const cand of sorted) {
                 let moveStr = '';
@@ -795,7 +764,7 @@ class View {
         if (this.aiDevelopMode && typeof window !== 'undefined' && window.workerCandidates && window.workerCandidates.length > 0) {
             // Sort by number of simulations, show top 5
             const sorted = window.workerCandidates.slice().sort((a, b) => b.numSims - a.numSims).slice(0, 5);
-            html += '<br><table style="font-size:12px; border-collapse:collapse;">';
+            html += '<br><table class="mcts-table">';
             html += '<tr><th>Move</th><th>Win Rate</th><th>Simulations</th></tr>';
             for (const cand of sorted) {
                 let moveStr = '';
@@ -818,6 +787,43 @@ class View {
                 html += `<tr><td>${moveStr}</td><td>${(cand.winRate*100).toFixed(1)}%</td><td>${cand.numSims}</td></tr>`;
             }
             html += '</table>';
+            if (window.workerTotalNumOfSimulations !== undefined) {
+                html += `<div class="mcts-total-sims">Total simulations: <b>${window.workerTotalNumOfSimulations}</b></div>`;
+            }
+        }
+        // --- 通常MCTS Candidates ---
+        if (this.aiDevelopMode && typeof window !== 'undefined' && window.mctsCandidates && window.mctsCandidates.length > 0) {
+            // Sort by number of simulations, show top 5
+            const sorted = window.mctsCandidates.slice().sort((a, b) => b.numSims - a.numSims).slice(0, 5);
+            html += '<br><table class="mcts-table">';
+            html += '<tr><th>Move</th><th>Win Rate</th><th>Simulations</th></tr>';
+            for (const cand of sorted) {
+                let moveStr = '';
+                if (cand.move[0]) {
+                    // Pawn move: show cell index
+                    const row = cand.move[0][0];
+                    const col = cand.move[0][1];
+                    const cellIndex = row * 9 + col;
+                    moveStr = `Pawn(${cellIndex})`;
+                } else if (cand.move[1]) {
+                    // Horizontal wall: show wall index
+                    const row = cand.move[1][0];
+                    const col = cand.move[1][1];
+                    const wallIndex = row * 8 + col;
+                    moveStr = `H-wall(${wallIndex})`;
+                } else if (cand.move[2]) {
+                    // Vertical wall: show wall index
+                    const row = cand.move[2][0];
+                    const col = cand.move[2][1];
+                    const wallIndex = row * 8 + col;
+                    moveStr = `V-wall(${wallIndex})`;
+                }
+                html += `<tr><td>${moveStr}</td><td>${(cand.winRate*100).toFixed(1)}%</td><td>${cand.numSims}</td></tr>`;
+            }
+            html += '</table>';
+            if (window.mctsTotalNumOfSimulations !== undefined) {
+                html += `<div class="mcts-total-sims">Total simulations: <b>${window.mctsTotalNumOfSimulations}</b></div>`;
+            }
         }
         this.htmlInfoBox.innerHTML = html;
     }

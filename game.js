@@ -801,6 +801,19 @@ class Game {
         return depthFirstSearch.bind(this)(pawn.position.row, pawn.position.col, pawn.goalRow);
     }
 
+    /**
+     * ゲーム状態をユニークな文字列に変換（MCTSキャッシュ用）
+     * @returns {string}
+     */
+    serializeForMCTS() {
+        // 盤面の駒位置・壁配置・残り壁数・手番のみを厳密に文字列化
+        const pawns = this.board.pawns.map(p=>`${p.position.row},${p.position.col},${p.numberOfLeftWalls}`).join('|');
+        const hWalls = this.board.walls.horizontal.map(row=>row.map(v=>v?1:0).join('')).join('-');
+        const vWalls = this.board.walls.vertical.map(row=>row.map(v=>v?1:0).join('')).join('-');
+        // winnerや余計なプロパティは一切含めない
+        return `${pawns}#${hWalls}#${vWalls}#${this.turn}`;
+    }
+
     static setWallsBesidePawn(wall2DArrays, pawn) {       
         const row = pawn.position.row;
         const col = pawn.position.col;
