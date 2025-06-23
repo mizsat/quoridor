@@ -68,6 +68,8 @@ class Controller {
      * @param {Object} move 手の内容
      */
     doMove(move) {
+        // ゴール後は手を進めない
+        if (this.game && this.game.winner !== null) return;
         const prevGame = Game.clone(this.game); // 直前の状態を保存
         const result = this.game.doMove(move, true);
         this.game.updateValidNextWalls(); // 壁合法性を毎回更新
@@ -99,6 +101,11 @@ class Controller {
         this.view.game = this.game;
         this.view.render();
         if (this.view && this.view.enableUndoRedoButtonIfNecessary) this.view.enableUndoRedoButtonIfNecessary();
+        // ゴール後でもUNDOできるように、勝敗メッセージを消す
+        if (this.view && this.view.htmlInfoBox) {
+            // 必要ならここで勝敗メッセージを消す処理を追加可能
+            // ただしinfo_box自体は消さない
+        }
     }
 
     /**
@@ -107,6 +114,7 @@ class Controller {
     redo() {
         if (!this.gameHistoryTrashCan || this.gameHistoryTrashCan.length === 0) return;
         this.game = this.gameHistoryTrashCan.pop();
+        // ★ゴール状態でもUNDOできるように、履歴を必ず残す
         this.gameHistory.push(Game.clone(this.game));
         this.view.game = this.game;
         this.view.render();
@@ -233,6 +241,8 @@ class AICompetition {
     }
 
     doMove(move) {
+        // ゴール後は手を進めない
+        if (this.game && this.game.winner !== null) return;
         if (this.game.doMove(move, true)) {
             this.view.render();
             if (this.game.winner === null) {

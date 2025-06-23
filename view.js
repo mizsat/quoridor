@@ -38,22 +38,14 @@ class View {
 
         // --- イベントハンドラ関数を先に定義 ---
         const onclickUndoButton = function(e) {
-            if (this.button.undo) this.button.undo.disabled = true;
-            if (this.button.redo) this.button.redo.disabled = true;
-            if (this.button.aiDo) this.button.aiDo.disabled = true;
-            if (this.button.confirm) this.button.confirm.disabled = true;
-            if (this.button.cancel) this.button.cancel.disabled = true;
+            // ボタンのdisable制御を削除
             View.removePreviousFadeInoutBox();
             View.cancelPawnClick();
             View.cancelWallShadows();
             this.controller.undo();
         };
         const onclickRedoButton = function(e) {
-            if (this.button.redo) this.button.redo.disabled = true;
-            if (this.button.undo) this.button.undo.disabled = true;
-            if (this.button.aiDo) this.button.aiDo.disabled = true;
-            if (this.button.confirm) this.button.confirm.disabled = true;
-            if (this.button.cancel) this.button.cancel.disabled = true;
+            // ボタンのdisable制御を削除
             View.cancelPawnClick();
             View.cancelWallShadows();
             this.controller.redo();
@@ -303,8 +295,8 @@ class View {
         }
         // --- 壁描画 ---
         ctx.save();
-        ctx.strokeStyle = '#a66';
-        ctx.fillStyle = '#a66';
+        ctx.strokeStyle = '#a66'; // 元の茶色
+        ctx.fillStyle = '#a66';   // 元の茶色
         ctx.lineWidth = 1;
         // 横壁
         let hWallIndex = 0;
@@ -573,20 +565,12 @@ class View {
 
     enableUndoRedoButtonIfNecessary() {
         const gameHistory = this.controller.gameHistory;
-        if (gameHistory !== null && gameHistory.length > 1) {
-            if (this.button.undo) this.button.undo.disabled = false;
-            if (this.button.reset) this.button.reset.disabled = false;
-        } else {
-            if (this.button.undo) this.button.undo.disabled = true;
-            if (this.button.reset) this.button.reset.disabled = true;
-        }
+        if (this.button.undo) this.button.undo.disabled = !(gameHistory && gameHistory.length > 1);
+        if (this.button.reset) this.button.reset.disabled = !(gameHistory && gameHistory.length > 1);
 
         const gameHistoryTrashCan = this.controller.gameHistoryTrashCan;
-        if (gameHistoryTrashCan !== null && gameHistoryTrashCan.length > 0) {
-            if (this.button.redo) this.button.redo.disabled = false;
-        } else if (this.button.redo) {
-            this.button.redo.disabled = true;
-        }
+        if (this.button.redo) this.button.redo.disabled = !(gameHistoryTrashCan && gameHistoryTrashCan.length > 0);
+        // ゴール状態やその他状態に関係なく、履歴があればUNDO/REDOボタンを有効にする
     }
 
     static horizontalWallShadow(x, turnOn) {
