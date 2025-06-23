@@ -8,20 +8,15 @@ window.onload = function() {
     let mctsMode = false;
     const mctsBtn = document.getElementById('mcts_button');
     if (mctsBtn) {
-        // OFF時の初期色（薄いグレー）
-        mctsBtn.style.backgroundColor = '#e0e0e0';
-        mctsBtn.style.color = '#333';
         mctsBtn.onclick = function() {
             mctsMode = !mctsMode;
             if (mctsMode) {
-                mctsBtn.style.backgroundColor = '';
-                mctsBtn.style.color = '';
+                mctsBtn.classList.add('active');
                 if (controller && controller.showMCTSCandidates) {
                     controller.showMCTSCandidates({ updateInterval: 1000 });
                 }
             } else {
-                mctsBtn.style.backgroundColor = '#e0e0e0'; // OFF時: 薄いグレー
-                mctsBtn.style.color = '#333';
+                mctsBtn.classList.remove('active');
                 // OFF時の処理（worker停止のみ）
                 if (controller.worker) {
                     controller.worker.terminate();
@@ -63,4 +58,20 @@ window.onload = function() {
         origStartNewGame(isHumanPlayerFirst, numOfMCTSSimulations);
         restartMCTSIfNeeded();
     };
+
+    // 盤面反転ボタン
+    const flipBtn = document.getElementById('flip_button');
+    let isFlipped = false;
+    if (flipBtn) {
+        flipBtn.onclick = function() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                flipBtn.classList.add('active');
+            } else {
+                flipBtn.classList.remove('active');
+            }
+            controller.view.isFlipped = isFlipped;
+            controller.view.render();
+        };
+    }
 };

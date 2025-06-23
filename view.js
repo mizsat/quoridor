@@ -206,8 +206,9 @@ class View {
         if (this.canvas.width !== canvasSize) this.canvas.width = canvasSize;
         if (this.canvas.height !== canvasSize) this.canvas.height = canvasSize;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // 反転フラグ取得
+        const isFlipped = this.isFlipped;
         // --- 盤面マス描画 ---
-        // セルは濃いグレー、セルの間（壁部分）は薄いグレー
         ctx.save();
         ctx.fillStyle = '#e0e0e0'; // 薄いグレー
         ctx.fillRect(0, 0, canvasSize, canvasSize);
@@ -215,8 +216,10 @@ class View {
         let cellIndex = 0;
         for (let i = 0; i < boardSize; i++) {
             for (let j = 0; j < boardSize; j++) {
-                const x = j * gridSize;
-                const y = i * gridSize;
+                const ii = isFlipped ? boardSize - 1 - i : i;
+                const jj = isFlipped ? boardSize - 1 - j : j;
+                const x = jj * gridSize;
+                const y = ii * gridSize;
                 ctx.save();
                 ctx.fillStyle = '#888'; // 濃いグレー
                 ctx.fillRect(x, y, cellSize, cellSize);
@@ -238,9 +241,11 @@ class View {
             ctx.fillStyle = '#222'; // 濃いグレーでハイライト
             for (let i = 0; i < 9; i++) {
                 for (let j = 0; j < 9; j++) {
+                    const ii = isFlipped ? 8 - i : i;
+                    const jj = isFlipped ? 8 - j : j;
                     if (this._game.validNextPositions[i][j]) {
-                        const x = j * gridSize;
-                        const y = i * gridSize;
+                        const x = jj * gridSize;
+                        const y = ii * gridSize;
                         ctx.fillRect(x, y, cellSize, cellSize);
                     }
                 }
@@ -259,9 +264,11 @@ class View {
             let hWallIndex = 0;
             for (let i = 0; i < 8; i++) {
                 for (let j = 0; j < 8; j++) {
+                    const ii = isFlipped ? 7 - i : i;
+                    const jj = isFlipped ? 7 - j : j;
                     if (this._game.validNextWalls.horizontal[i][j]) {
-                        const x = j * gridSize;
-                        const y = (i + 1) * cellSize + i * wallSize;
+                        const x = jj * gridSize;
+                        const y = (ii + 1) * cellSize + ii * wallSize;
                         ctx.fillRect(x, y, cellSize, wallSize);
                         // 番号もグレースケール
                         ctx.save();
@@ -277,9 +284,11 @@ class View {
             let vWallIndex = 0;
             for (let i = 0; i < 8; i++) {
                 for (let j = 0; j < 8; j++) {
+                    const ii = isFlipped ? 7 - i : i;
+                    const jj = isFlipped ? 7 - j : j;
                     if (this._game.validNextWalls.vertical[i][j]) {
-                        const x = (j + 1) * cellSize + j * wallSize;
-                        const y = i * gridSize;
+                        const x = (jj + 1) * cellSize + jj * wallSize;
+                        const y = ii * gridSize;
                         ctx.fillRect(x, y, wallSize, cellSize);
                         // 番号もグレースケール
                         ctx.save();
@@ -302,16 +311,18 @@ class View {
         let hWallIndex = 0;
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
+                const ii = isFlipped ? 7 - i : i;
+                const jj = isFlipped ? 7 - j : j;
                 if (this._game.board.walls.horizontal[i][j]) {
                     // 壁の中心がマスとマスの間に来るよう調整
-                    const x = j * gridSize;
-                    const y = (i + 1) * cellSize + i * wallSize;
+                    const x = jj * gridSize;
+                    const y = (ii + 1) * cellSize + ii * wallSize;
                     ctx.fillRect(x, y, cellSize * 2 + wallSize, wallSize);
                 }
                 // 横壁設置番号 0-63
                 // クリック範囲（cellSize x wallSize）の中央に表示
-                const x = j * gridSize;
-                const y = (i + 1) * cellSize + i * wallSize;
+                const x = jj * gridSize;
+                const y = (ii + 1) * cellSize + ii * wallSize;
                 ctx.save();
                 ctx.fillStyle = '#888'; // グレースケール
                 ctx.font = '12px sans-serif';
@@ -326,16 +337,18 @@ class View {
         let vWallIndex = 0;
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
+                const ii = isFlipped ? 7 - i : i;
+                const jj = isFlipped ? 7 - j : j;
                 if (this._game.board.walls.vertical[i][j]) {
                     // 壁の中心がマスとマスの間に来るよう調整
-                    const x = (j + 1) * cellSize + j * wallSize;
-                    const y = i * gridSize;
+                    const x = (jj + 1) * cellSize + jj * wallSize;
+                    const y = ii * gridSize;
                     ctx.fillRect(x, y, wallSize, cellSize * 2 + wallSize);
                 }
                 // 縦壁設置番号 0-63
                 // クリック範囲（wallSize x cellSize）の中央に表示
-                const x = (j + 1) * cellSize + j * wallSize;
-                const y = i * gridSize;
+                const x = (jj + 1) * cellSize + jj * wallSize;
+                const y = ii * gridSize;
                 ctx.save();
                 ctx.fillStyle = '#888'; // グレースケール
                 ctx.font = '12px sans-serif';
@@ -354,8 +367,10 @@ class View {
         // 枠線なし
         for (let p = 0; p < pawns.length; p++) {
             const pos = pawns[p].position;
-            const x = pos.col * gridSize + cellSize / 2;
-            const y = pos.row * gridSize + cellSize / 2;
+            const ii = isFlipped ? 8 - pos.row : pos.row;
+            const jj = isFlipped ? 8 - pos.col : pos.col;
+            const x = jj * gridSize + cellSize / 2;
+            const y = ii * gridSize + cellSize / 2;
             ctx.beginPath();
             ctx.arc(x, y, 18, 0, 2 * Math.PI);
             ctx.fillStyle = pawnColors[p];
@@ -570,7 +585,9 @@ class View {
 
         const gameHistoryTrashCan = this.controller.gameHistoryTrashCan;
         if (this.button.redo) this.button.redo.disabled = !(gameHistoryTrashCan && gameHistoryTrashCan.length > 0);
-        // ゴール状態やその他状態に関係なく、履歴があればUNDO/REDOボタンを有効にする
+        // MCTSボタン・FLIPボタンは常に有効化
+        if (this.button.mcts) this.button.mcts.disabled = false;
+        if (this.button.flip) this.button.flip.disabled = false;
     }
 
     static horizontalWallShadow(x, turnOn) {
@@ -651,20 +668,23 @@ class View {
         const cellSize = 48;
         const wallSize = 12;
         const gridSize = cellSize + wallSize;
+        const isFlipped = this.isFlipped;
         // 盤面マスの範囲
-        const col = Math.floor(x / gridSize);
-        const row = Math.floor(y / gridSize);
+        let col = Math.floor(x / gridSize);
+        let row = Math.floor(y / gridSize);
         // cell領域内か（cellSize x cellSizeの範囲のみ）
         const cellX = col * gridSize;
         const cellY = row * gridSize;
+        let logicalRow = isFlipped ? 8 - row : row;
+        let logicalCol = isFlipped ? 8 - col : col;
         if (
             row >= 0 && row < 9 && col >= 0 && col < 9 &&
             x >= cellX && x < cellX + cellSize &&
             y >= cellY && y < cellY + cellSize
         ) {
             // 駒の移動可能マスか判定
-            if (this._game.validNextPositions && this._game.validNextPositions[row][col]) {
-                this.controller.doMove([[row, col], null, null]);
+            if (this._game.validNextPositions && this._game.validNextPositions[logicalRow][logicalCol]) {
+                this.controller.doMove([[logicalRow, logicalCol], null, null]);
                 return;
             }
         }
@@ -678,8 +698,10 @@ class View {
                     x >= wx && x < wx + cellSize &&
                     y >= wy && y < wy + wallSize
                 ) {
-                    if (this._game.validNextWalls && this._game.validNextWalls.horizontal[i][j]) {
-                        this.controller.doMove([null, [i, j], null]);
+                    let logicalI = isFlipped ? 7 - i : i;
+                    let logicalJ = isFlipped ? 7 - j : j;
+                    if (this._game.validNextWalls && this._game.validNextWalls.horizontal[logicalI][logicalJ]) {
+                        this.controller.doMove([null, [logicalI, logicalJ], null]);
                         return;
                     }
                 }
@@ -695,8 +717,10 @@ class View {
                     x >= vx && x < vx + wallSize &&
                     y >= vy && y < vy + cellSize
                 ) {
-                    if (this._game.validNextWalls && this._game.validNextWalls.vertical[i][j]) {
-                        this.controller.doMove([null, null, [i, j]]);
+                    let logicalI = isFlipped ? 7 - i : i;
+                    let logicalJ = isFlipped ? 7 - j : j;
+                    if (this._game.validNextWalls && this._game.validNextWalls.vertical[logicalI][logicalJ]) {
+                        this.controller.doMove([null, null, [logicalI, logicalJ]]);
                         return;
                     }
                 }

@@ -19,7 +19,8 @@
 #reset_button,
 #undo_button,
 #redo_button,
-#mcts_button {
+#mcts_button,
+#flip_button {
     margin-top: 0;
     margin-right: 0;
     padding: 8px 20px;
@@ -34,11 +35,14 @@
 #reset_button:hover,
 #undo_button:hover,
 #redo_button:hover,
-#mcts_button:hover {
+#mcts_button:hover,
+#flip_button:hover {
     background: #444;
 }
 #undo_button:disabled,
-#redo_button:disabled {
+#redo_button:disabled,
+#mcts_button:disabled,
+#flip_button:disabled {
     background: #ccc;
     color: #888;
     opacity: 0.6;
@@ -81,4 +85,11 @@ body {
     font-size: 13px;
     color: #555;
     margin-bottom: 2px;
+}
+#mcts_button.active,
+#flip_button.active {
+    background: #fff;
+    color: #888;
+    border: none;
+    box-shadow: 0 0 0 2px #fff inset;
 }
